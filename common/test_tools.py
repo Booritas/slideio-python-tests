@@ -1,26 +1,32 @@
 from enum import Enum
 import os
 
-class TestImageDir(Enum):
+root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+class ImageDir(Enum):
     PUBLIC = "PUBLIC"
     PRIVATE = "PRIVATE"
     FULL = "FULL"
 
-class TestTools:
-    def getImageTestDirPath(self, subpath, testImageDir):
-        if testImageDir == TestImageDir.PUBLIC:
+class Tools:
+    def getImageDirPath(self, subpath, testImageDir):
+        if testImageDir == ImageDir.PUBLIC:
             return os.environ.get('SLIDEIO_TEST_DATA_PATH')
-        elif testImageDir == TestImageDir.PRIVATE:
+        elif testImageDir == ImageDir.PRIVATE:
             return os.environ.get('SLIDEIO_TEST_DATA_PRIV_PATH')
-        elif testImageDir == TestImageDir.FULL:
+        elif testImageDir == ImageDir.FULL:
             return os.environ.get('SLIDEIO_IMAGES_PATH')
         raise Exception("Invalid test image directory")
     
-    def getImageTestFilePath(self, format, subpath, testImageDir):
-        return os.path.join(self.getImageTestDirPath(subpath, testImageDir), format, subpath)
+    def getImageFilePath(self, format, subpath, testImageDir):
+        return os.path.join(self.getImageDirPath(subpath, testImageDir), format, subpath)
     
     def isImageTestAvalable(self, testImageDir):
         try:
-            return os.path.exists(self.getImageTestDirPath(testImageDir))
+            return os.path.exists(self.getImageDirPath(testImageDir))
         except:
             return False
+        
+    def getTestImagePath(self, format, filename):
+        return os.path.join(root_path, "images", format, filename)  
+
