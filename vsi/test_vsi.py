@@ -11,7 +11,7 @@ from common.test_tools import Tools, ImageDir
 
 class TestVsi(unittest.TestCase):
 
-    def test_vsi_slide(self):
+    def test_vsi_rgb_slide(self):
         file_path = Tools().getImageFilePath("vsi", "OS-1/OS-1.vsi", ImageDir.FULL)
         file_name = os.path.splitext(os.path.basename(file_path))[0]
         test_file_name = f"{file_name}_1.png"
