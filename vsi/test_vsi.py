@@ -32,8 +32,6 @@ class TestVsi(unittest.TestCase):
             self.assertEqual(1, len(aux_image_names))
             self.assertEqual("Overview", aux_image_names[0])
             with slide.get_scene(0) as scene:
-                metadata = scene.raw_metadata
-                self.assertEqual(metadata,'')
                 scene_rect = (0,0,66982,76963)
                 self.assertEqual(scene_rect, scene.rect)
                 self.assertIsNotNone(scene)
@@ -156,6 +154,92 @@ class TestVsi(unittest.TestCase):
                 metadata = slide.raw_metadata
                 self.assertEqual(metadata,'')
             
+    def test_multiple_ets_files(self):
+        file_path = Tools().getImageFilePath("vsi", 
+            "Zenodo/Abdominal/G1M16_ABD_HE_B6.vsi",
+            ImageDir.FULL)
+        file_name = os.path.splitext(os.path.basename(file_path))[0]
+        with slideio.open_slide(file_path, "VSI") as slide:
+            self.assertIsNotNone(slide)
+            # check metadata
+            metadata = slide.raw_metadata
+            json_metadata = json.loads(metadata)
+            self.assertEqual(json_metadata['tag'],-2)
+            self.assertEqual(json_metadata['name'], 'root')
+            val = json_metadata['value']
+            self.assertEqual(val[0]['tag'], 2000)
+            # check scenes
+            self.assertEqual(3, slide.num_scenes)   
+            #self.assertEqual(0, slide.num_aux_images)
+            aux_image_names = slide.get_aux_image_names()
+            self.assertEqual(1, len(aux_image_names))
+            self.assertEqual("Overview", aux_image_names[0])
+            with slide.get_scene(0) as scene:
+                self.assertEqual(scene.rect, (0,0,14749,20874))
+                self.assertEqual(scene.origin, (0,0))
+                self.assertEqual(scene.size, (14749,20874))
+                self.assertEqual(scene.num_channels, 3)
+                self.assertEqual(scene.num_z_slices, 1)
+                self.assertEqual(scene.num_t_frames, 1)
+                self.assertEqual(scene.get_channel_data_type(0), np.uint8)
+                self.assertEqual(scene.get_channel_data_type(1), np.uint8)
+                self.assertEqual(scene.get_channel_data_type(2), np.uint8)
+                self.assertEqual(scene.magnification, 40)
+                self.assertAlmostEqual(scene.resolution[0], 0.1722e-6, 9)
+                self.assertAlmostEqual(scene.resolution[1], 0.1722e-6, 9)
+                self.assertEqual(scene.num_zoom_levels, 7)
+                magnification = scene.magnification
+                for i in range(scene.num_zoom_levels):
+                    zoomLevel = scene.get_zoom_level_info(i)
+                    self.assertAlmostEqual(zoomLevel.magnification, magnification,1)
+                    self.assertEqual(zoomLevel.tile_size.width, 512)
+                    self.assertEqual(zoomLevel.tile_size.height, 512)
+                    magnification /= 2
+                self.assertEqual(scene.compression, slideio.Compression.Jpeg)
+                scene_rect = scene.rect
+                x = scene_rect[2]//2
+                y = scene_rect[3]//2
+                block_rect = (x,y,600,600)
+                raster = scene.read_block(rect=block_rect, channel_indices=[0])
+                test_file_name = f"{file_name}_0.png"
+                # image = Image.fromarray(raster)
+                # image.save(Tools().getTestImagePath("vsi", test_file_name))
+                test_image = Image.open(Tools().getTestImagePath("vsi", test_file_name))
+                test_data = np.array(test_image)
+                self.assertTrue(np.array_equal(raster, test_data))
+            with slide.get_scene(1) as scene:
+                self.assertEqual(scene.rect, (0,0,15596,19403))
+                self.assertEqual(scene.origin, (0,0))
+                self.assertEqual(scene.size, (15596,19403))
+                self.assertEqual(scene.num_channels, 3)
+                self.assertEqual(scene.num_z_slices, 1)
+                self.assertEqual(scene.num_t_frames, 1)
+                self.assertEqual(scene.get_channel_data_type(0), np.uint8)
+                self.assertEqual(scene.get_channel_data_type(1), np.uint8)
+                self.assertEqual(scene.get_channel_data_type(2), np.uint8)
+                self.assertEqual(scene.magnification, 40)
+                self.assertAlmostEqual(scene.resolution[0], 0.1722e-6, 9)
+                self.assertAlmostEqual(scene.resolution[1], 0.1722e-6, 9)
+                self.assertEqual(scene.num_zoom_levels, 7)
+                magnification = scene.magnification
+                for i in range(scene.num_zoom_levels):
+                    zoomLevel = scene.get_zoom_level_info(i)
+                    self.assertAlmostEqual(zoomLevel.magnification, magnification,1)
+                    self.assertEqual(zoomLevel.tile_size.width, 512)
+                    self.assertEqual(zoomLevel.tile_size.height, 512)
+                    magnification /= 2
+                self.assertEqual(scene.compression, slideio.Compression.Jpeg)
+                scene_rect = scene.rect
+                x = scene_rect[2]//2
+                y = scene_rect[3]//2
+                block_rect = (x,y,600,600)
+                raster = scene.read_block(rect=block_rect, channel_indices=[0,1,2])
+                test_file_name = f"{file_name}_1.png"
+                # image = Image.fromarray(raster)
+                # image.save(Tools().getTestImagePath("vsi", test_file_name))
+                test_image = Image.open(Tools().getTestImagePath("vsi", test_file_name))
+                test_data = np.array(test_image)
+                self.assertTrue(np.array_equal(raster, test_data))
 
         
 if __name__ == '__main__':
