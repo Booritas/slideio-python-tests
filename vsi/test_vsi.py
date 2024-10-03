@@ -6,7 +6,6 @@ from PIL import Image
 import numpy as np
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from common.test_tools import Tools, ImageDir
 
 class TestVsi(unittest.TestCase):
