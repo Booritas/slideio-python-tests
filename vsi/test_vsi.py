@@ -4,6 +4,7 @@ import os
 import sys
 from PIL import Image
 import numpy as np
+import json
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from common.test_tools import Tools, ImageDir
@@ -17,12 +18,22 @@ class TestVsi(unittest.TestCase):
         overview_test_file_name = f"{file_name}_overview.png"
         with slideio.open_slide(file_path, "VSI") as slide:
             self.assertIsNotNone(slide)
+            # check metadata
+            metadata = slide.raw_metadata
+            json_metadata = json.loads(metadata)
+            self.assertEqual(json_metadata['tag'],-2)
+            self.assertEqual(json_metadata['name'], 'root')
+            val = json_metadata['value']
+            self.assertEqual(val[0]['tag'], 2000)
+            # check scenes
             num_scenes = slide.num_scenes
             self.assertEqual(1, num_scenes)
             aux_image_names = slide.get_aux_image_names()
             self.assertEqual(1, len(aux_image_names))
             self.assertEqual("Overview", aux_image_names[0])
             with slide.get_scene(0) as scene:
+                metadata = scene.raw_metadata
+                self.assertEqual(metadata,'')
                 scene_rect = (0,0,66982,76963)
                 self.assertEqual(scene_rect, scene.rect)
                 self.assertIsNotNone(scene)
@@ -106,6 +117,44 @@ class TestVsi(unittest.TestCase):
                 test_image = Image.open(Tools().getTestImagePath("vsi", test_file_name))
                 test_data = np.array(test_image)
                 self.assertTrue(np.array_equal(image, test_data))
+
+    def test_single_vsi_file(self):
+        file_path = Tools().getImageFilePath("vsi", 
+            "Zenodo/Q6VM49JF/Figure-1-ultrasound-raw-data/SPECTRUM_#201_2016-06-14_Jiangtao Liu/1286FL9057GDF8RGDX257R2GLHZ.vsi",
+            ImageDir.FULL)
+        file_name = os.path.splitext(os.path.basename(file_path))[0]
+        test_file_name = f"{file_name}_1.png"
+        with slideio.open_slide(file_path, "VSI") as slide:
+            self.assertIsNotNone(slide)
+            self.assertEqual(1, slide.num_scenes)   
+            self.assertEqual(0, slide.num_aux_images)
+            aux_image_names = slide.get_aux_image_names()
+            self.assertEqual(0, len(aux_image_names))
+            metadata = slide.raw_metadata
+            self.assertEqual(metadata,'')
+            with slide.get_scene(0) as scene:
+                self.assertEqual(scene.rect, (0,0,608,600))
+                self.assertEqual(scene.origin, (0,0))
+                self.assertEqual(scene.size, (608,600))
+                self.assertEqual(scene.num_channels, 3)
+                self.assertEqual(scene.num_z_slices, 1)
+                self.assertEqual(scene.num_t_frames, 1)
+                self.assertEqual(scene.get_channel_data_type(0), np.uint8)
+                self.assertEqual(scene.get_channel_data_type(1), np.uint8)
+                self.assertEqual(scene.get_channel_data_type(2), np.uint8)
+                self.assertEqual(scene.magnification, 0)
+                self.assertAlmostEqual(scene.resolution[0], 0., 9)
+                self.assertAlmostEqual(scene.resolution[1], 0., 9)
+                self.assertEqual(scene.num_zoom_levels, 1)
+                self.assertEqual(scene.compression, slideio.Compression.Uncompressed)
+                raster = scene.read_block(channel_indices=[1])
+                # image = Image.fromarray(raster)
+                # image.save(Tools().getTestImagePath("vsi", test_file_name))
+                test_image = Image.open(Tools().getTestImagePath("vsi", test_file_name))
+                test_data = np.array(test_image)
+                self.assertTrue(np.array_equal(raster, test_data))
+                metadata = slide.raw_metadata
+                self.assertEqual(metadata,'')
             
 
         
