@@ -241,6 +241,41 @@ class TestVsi(unittest.TestCase):
                 test_data = np.array(test_image)
                 self.assertTrue(np.array_equal(raster, test_data))
 
+    def test_invalid_scene(self):
+        file_path = Tools().getImageFilePath("vsi", 
+            "vs200-vsi-share/Image_B309.vsi",
+            ImageDir.FULL)
+        with slideio.open_slide(file_path, "VSI") as slide:
+            self.assertIsNotNone(slide)
+            # check metadata
+            self.assertEqual(0, slide.num_scenes)   
+            self.assertEqual(2, slide.num_aux_images)
+            aux_image_names = slide.get_aux_image_names()
+            self.assertEqual(2, len(aux_image_names))
+            self.assertEqual("Macro image", aux_image_names[0])
+            self.assertEqual("Overview", aux_image_names[1])
+            with slide.get_aux_image(aux_image_names[1]) as scene:
+                self.assertEqual(scene.rect, (0,0,18124,9196))
+                self.assertEqual(scene.origin, (0,0))
+                self.assertEqual(scene.size, (18124,9196))
+                self.assertEqual(scene.num_channels, 3)
+                self.assertEqual(scene.num_z_slices, 1)
+                self.assertEqual(scene.num_t_frames, 1)
+                self.assertEqual(scene.get_channel_data_type(0), np.uint8)
+                self.assertEqual(scene.get_channel_data_type(1), np.uint8)
+                self.assertEqual(scene.get_channel_data_type(2), np.uint8)
+                self.assertEqual(scene.magnification, 0)
+                self.assertAlmostEqual(scene.resolution[0], 2.7243e-6, 9)
+                self.assertAlmostEqual(scene.resolution[1], 2.7241e-6, 9)
+                self.assertEqual(scene.num_zoom_levels, 7)
+                magnification = scene.magnification
+                for i in range(scene.num_zoom_levels):
+                    zoomLevel = scene.get_zoom_level_info(i)
+                    self.assertAlmostEqual(zoomLevel.magnification, magnification,1)
+                    self.assertEqual(zoomLevel.tile_size.width, 512)
+                    self.assertEqual(zoomLevel.tile_size.height, 512)
+                    magnification /= 2
+                self.assertEqual(scene.compression, slideio.Compression.Jpeg)
         
 if __name__ == '__main__':
     unittest.main()
