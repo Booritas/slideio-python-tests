@@ -25,7 +25,7 @@ class TestVsi(unittest.TestCase):
                 self.assertIsNotNone(scene)
                 num_channels = scene.num_channels
                 self.assertEqual(3, num_channels)
-                #self.assertEqual(scene.magnification, 20.)
+                self.assertEqual(scene.magnification, 20.)
                 x = scene_rect[2]//2
                 y = scene_rect[3]//2
                 block_rect = (x,y,600,600)
