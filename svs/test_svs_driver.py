@@ -8,7 +8,7 @@ import slideio
 
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from common.test_tools import Tools, ImageDir
+from common.test_tools import Tools, ImageDir, compare_images
 
 
 class TestSVS(unittest.TestCase):
@@ -201,7 +201,7 @@ class TestSVS(unittest.TestCase):
                 cv.IMREAD_UNCHANGED
                 )
             self.assertEqual(image.shape, reference_image.shape)
-            score = slideio.compare_images(image, reference_image)
+            score = compare_images(image, reference_image)
             self.assertEqual(score, 1)
 
     def test_file_rgb_image(self):

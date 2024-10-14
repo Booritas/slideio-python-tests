@@ -7,7 +7,7 @@ import numpy as np
 import slideio
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from common.test_tools import Tools, ImageDir
+from common.test_tools import Tools, ImageDir, compare_images
 
 
 class TestZVI(unittest.TestCase):
@@ -123,7 +123,7 @@ class TestZVI(unittest.TestCase):
                     channel_raster = image[:,:,channel_index]
                     test_image_path = Tools().getTestImagePath("zvi", f"Zeiss-1-Merged-ch{channel_index}.tif")
                     test_raster = cv.imread(test_image_path, cv.IMREAD_UNCHANGED)
-                    score = slideio.compare_images(channel_raster.copy(), test_raster)
+                    score = compare_images(channel_raster.copy(), test_raster)
                     self.assertEqual(score, 1)
 
 
@@ -145,7 +145,7 @@ class TestZVI(unittest.TestCase):
                     test_image_path = Tools().getTestImagePath("zvi", f"Zeiss-1-Merged-ch{channel_index}.tif")
                     test_raster = cv.imread(test_image_path, cv.IMREAD_UNCHANGED)
                     test_raster_roi = test_raster[roi[1]:roi[1]+roi[3], roi[0]:roi[0]+roi[2]]
-                    score = slideio.compare_images(channel_raster.copy(), test_raster_roi.copy())
+                    score = compare_images(channel_raster.copy(), test_raster_roi.copy())
                     self.assertEqual(score, 1)
 
 
@@ -164,7 +164,7 @@ class TestZVI(unittest.TestCase):
                 image = scene.read_block(channel_indices=(2,), slices=(5,6))
                 size = scene.size
                 raw_slice = np.reshape(raw_slice, (size[1],size[0]))
-                score = slideio.compare_images(image, raw_slice)
+                score = compare_images(image, raw_slice)
                 self.assertEqual(score, 1)
 
 
@@ -186,7 +186,7 @@ class TestZVI(unittest.TestCase):
                 raw_slice = np.reshape(raw_slice, (size[1],size[0]))
                 slice_roi = raw_slice[roi[1]:roi[1]+roi[3], roi[0]:roi[0]+roi[2]]
                 image_slice = image[2, :, :, 1]
-                score = slideio.compare_images(image_slice.copy(), slice_roi.copy())
+                score = compare_images(image_slice.copy(), slice_roi.copy())
                 self.assertEqual(score, 1)
 
 

@@ -1,5 +1,6 @@
 from enum import Enum
 import os
+import numpy as np
 
 root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -30,3 +31,9 @@ class Tools:
     def getTestImagePath(self, format, filename):
         return os.path.join(root_path, "images", format, filename)  
 
+
+def compare_images(left, right):
+    if np.array_equal(left, right):
+        return 1.0
+    return 0.
+        
