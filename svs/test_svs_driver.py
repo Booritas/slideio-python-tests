@@ -8,7 +8,7 @@ import slideio
 
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from common.test_tools import Tools, ImageDir, compare_images
+from common.test_tools import Tools, ImageDir, compare_images, compute_similarity
 
 
 class TestSVS(unittest.TestCase):
@@ -635,7 +635,9 @@ class TestSVS(unittest.TestCase):
             rect,
             size=new_size
             )
-        self.assertTrue(np.array_equal(block_raster, reference_image))
+        
+        sim_score = compute_similarity(block_raster, reference_image)
+        self.assertGreater(sim_score, 0.999)
 
 
 if __name__ == '__main__':

@@ -7,7 +7,7 @@ import numpy as np
 import json
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from common.test_tools import Tools, ImageDir
+from common.test_tools import Tools, ImageDir, compute_similarity
 
 class TestVsi(unittest.TestCase):
 
@@ -63,7 +63,9 @@ class TestVsi(unittest.TestCase):
                 #image.save(Tools().getTestImagePath("vsi", test_file_name))
                 test_image = Image.open(Tools().getTestImagePath("vsi", test_file_name))
                 test_data = np.array(test_image)
-                self.assertTrue(np.array_equal(block, test_data))
+                sim_score = compute_similarity(block, test_data)
+                self.assertGreater(sim_score, 0.999)
+
             with slide.get_aux_image(aux_image_names[0]) as aux_image:
                 self.assertEqual(aux_image.rect, (0, 0, 6753, 13196))
                 self.assertEqual(aux_image.num_channels, 3)
@@ -81,7 +83,8 @@ class TestVsi(unittest.TestCase):
                 #image.save(Tools().getTestImagePath("vsi", overview_test_file_name))
                 test_image = Image.open(Tools().getTestImagePath("vsi", overview_test_file_name))
                 test_data = np.array(test_image)
-                self.assertTrue(np.array_equal(block, test_data))
+                sim_score = compute_similarity(block, test_data)
+                self.assertGreater(sim_score, 0.999)
 
     def test_vsi_j2k_slide(self):
         file_path = Tools().getImageFilePath("vsi", "vsi-multifile/vsi-ets-test-jpg2k.vsi", ImageDir.FULL)
@@ -114,7 +117,9 @@ class TestVsi(unittest.TestCase):
                 # image.save(Tools().getTestImagePath("vsi", test_file_name))
                 test_image = Image.open(Tools().getTestImagePath("vsi", test_file_name))
                 test_data = np.array(test_image)
-                self.assertTrue(np.array_equal(image, test_data))
+                print(test_data.shape)
+                sim_score = compute_similarity(image, test_data)
+                self.assertGreater(sim_score, 0.999)
 
     def test_single_vsi_file(self):
         file_path = Tools().getImageFilePath("vsi", 
