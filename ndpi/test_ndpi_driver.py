@@ -49,11 +49,7 @@ class TestNDPI(unittest.TestCase):
                 self.assertEqual(np.uint8, scene.get_channel_data_type(0))
                 self.assertEqual(np.uint8, scene.get_channel_data_type(1))
                 self.assertEqual(np.uint8, scene.get_channel_data_type(2))
-                self.assertEqual(20, scene.magnification)
                 self.assertEqual(slideio.Compression.Jpeg, scene.compression)
-                self.assertEqual(np.uint8, scene.get_channel_data_type(0))
-                self.assertEqual(np.uint8, scene.get_channel_data_type(1))
-                self.assertEqual(np.uint8, scene.get_channel_data_type(2))
 
                 block_rect = scene.rect
                 block_size = (400, 298)
@@ -97,6 +93,30 @@ class TestNDPI(unittest.TestCase):
             map = slide.get_aux_image("map").read_block()
             score = compute_similarity(map, np.array(map_test))
             self.assertGreater(score, 0.9999)
+
+    def test_readJpegXRImageBlocks(self):
+        filePath = Tools().getImageFilePath("hamamatsu", "DM0014 - 2020-04-02 10.25.21.ndpi", ImageDir.FULL)
+        testFilePath1 = Tools().getImageFilePath("hamamatsu", "DM0014 - 2020-04-02 10.25.21-roi-resampled.png", ImageDir.FULL)
+        with slideio.open_slide(filePath, "NDPI") as slide:
+            self.assertEqual(slide.num_scenes, 1)
+            with slide.get_scene(0) as scene:
+                self.assertEqual(scene.num_channels, 1)
+                self.assertEqual(scene.resolution, (4.4163759219184738e-07, 4.4163759219184738e-07))
+                self.assertEqual(scene.rect, (0, 0, 69888, 34944))
+                self.assertEqual(20., scene.magnification)
+                self.assertEqual(np.uint16, scene.get_channel_data_type(0))
+                self.assertEqual(slideio.Compression.JpegXR, scene.compression)
+
+                rect = scene.rect
+                coeff = 500./rect[2]
+                block_size = (round(rect[2]*coeff),round(rect[3]*coeff))
+                block_raster = scene.read_block(rect, block_size)
+                #Image.fromarray(block_raster).show()
+                test_image = Image.open(testFilePath1)
+                #test_image.show()
+                test_raster = np.array(test_image)
+                similarity = compute_similarity(block_raster, test_raster)
+                self.assertGreater(similarity, 0.99)
 
 if __name__ == '__main__':
     unittest.main()
