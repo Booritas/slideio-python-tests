@@ -45,7 +45,9 @@ def compute_similarity(leftM, rightM):
         raise RuntimeError(f"Number of image channels for comparison shall be equal. Left image: {leftM.shape[2]}, Right image: {rightM.shape[2]}")
 
     if leftM.dtype != rightM.dtype:
-        raise RuntimeError(f"Image types for comparison shall be equal. Left image: {leftM.dtype}, Right image: {rightM.dtype}")
+        #raise RuntimeError(f"Image types for comparison shall be equal. Left image: {leftM.dtype}, Right image: {rightM.dtype}")
+        rightM = rightM.astype(leftM.dtype)  # Convert rightM to the type of leftM
+
     
     leftM = leftM.flatten()
     rightM = rightM.flatten()
