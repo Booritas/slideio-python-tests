@@ -30,6 +30,8 @@ if [[ "$os" == "Darwin" && "$platform" == "arm64" ]]; then
   minversion=8
 fi
 
+# minversion=10
+# maxversion=10
 
 # Define an array of Python version strings
 # Define a function to create an array of Python versions

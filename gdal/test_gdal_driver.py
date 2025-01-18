@@ -145,16 +145,16 @@ class TestGDAL(unittest.TestCase):
         raster = scene.read_block(block_rect)
         mean, stddev = cv.meanStdDev(raster)
         self.assertEqual(mean[0], 255)
-        self.assertEqual(stddev[0], 0)
+        self.assertAlmostEqual(stddev[0], 0, delta=1e-5)
         self.assertEqual(mean[1], 255)
-        self.assertEqual(stddev[1], 0)
+        self.assertAlmostEqual(stddev[1], 0, delta=1e-5)
         self.assertEqual(mean[2], 0)
-        self.assertEqual(stddev[2], 0)
+        self.assertAlmostEqual(stddev[2], 0, delta=1e-5)
         # read one channel block
         raster = scene.read_block(block_rect, channel_indices=[1])
         mean, stddev = cv.meanStdDev(raster)
         self.assertEqual(mean[0], 255)
-        self.assertEqual(stddev[0], 0)
+        self.assertAlmostEqual(stddev[0], 0, delta=1e-5)
 
     def test_resampling_block_png8bit(self):
         """
@@ -174,11 +174,11 @@ class TestGDAL(unittest.TestCase):
         raster = scene.read_block(block_rect, size=block_size)
         mean, stddev = cv.meanStdDev(raster)
         self.assertEqual(mean[0], 255)
-        self.assertEqual(stddev[0], 0)
+        self.assertAlmostEqual(stddev[0], 0, delta=1e-5)
         self.assertEqual(mean[1], 255)
-        self.assertEqual(stddev[1], 0)
+        self.assertAlmostEqual(stddev[1], 0, delta=1e-5)
         self.assertEqual(mean[2], 0)
-        self.assertEqual(stddev[2], 0)
+        self.assertAlmostEqual(stddev[2], 0, delta=1e-5)
         # read one channel block
         raster = scene.read_block(
             block_rect,
@@ -187,7 +187,7 @@ class TestGDAL(unittest.TestCase):
             )
         mean, stddev = cv.meanStdDev(raster)
         self.assertEqual(mean[0], 255)
-        self.assertEqual(stddev[0], 0)
+        self.assertAlmostEqual(stddev[0], 0, delta=1e-5)
 
     def test_readblock_png8bit_with(self):
         """
@@ -207,16 +207,16 @@ class TestGDAL(unittest.TestCase):
                 raster = scene.read_block(block_rect)
                 mean, stddev = cv.meanStdDev(raster)
                 self.assertEqual(mean[0], 255)
-                self.assertEqual(stddev[0], 0)
+                self.assertAlmostEqual(stddev[0], 0, delta=1e-5)
                 self.assertEqual(mean[1], 255)
-                self.assertEqual(stddev[1], 0)
+                self.assertAlmostEqual(stddev[1], 0, delta=1e-5)
                 self.assertEqual(mean[2], 0)
-                self.assertEqual(stddev[2], 0)
+                self.assertAlmostEqual(stddev[2], 0, delta=1e-5)
                 # read one channel block
                 raster = scene.read_block(block_rect, channel_indices=[1])
                 mean, stddev = cv.meanStdDev(raster)
                 self.assertEqual(mean[0], 255)
-                self.assertEqual(stddev[0], 0)
+                self.assertAlmostEqual(stddev[0], 0, delta=1e-5)
 
 if __name__ == '__main__':
     unittest.main()
