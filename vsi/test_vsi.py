@@ -264,7 +264,7 @@ class TestVsi(unittest.TestCase):
                 self.assertEqual(scene.get_channel_data_type(0), np.uint8)
                 self.assertEqual(scene.get_channel_data_type(1), np.uint8)
                 self.assertEqual(scene.get_channel_data_type(2), np.uint8)
-                self.assertEqual(scene.magnification, 0)
+                self.assertEqual(scene.magnification, 2)
                 self.assertAlmostEqual(scene.resolution[0], 2.7243e-6, 9)
                 self.assertAlmostEqual(scene.resolution[1], 2.7241e-6, 9)
                 self.assertEqual(scene.num_zoom_levels, 7)
@@ -276,6 +276,30 @@ class TestVsi(unittest.TestCase):
                     self.assertEqual(zoomLevel.tile_size.height, 512)
                     magnification /= 2
                 self.assertEqual(scene.compression, slideio.Compression.Jpeg)
+        
+    def test_voulmes(self):
+        file_path = Tools().getImageFilePath("vsi", 
+            "private/d/STS_G6889_11_1_pHH3.vsi",
+            ImageDir.FULL)
+        test_file_path = Tools().getImageFilePath("vsi", 
+            "test-output/STS_G6889_11_1_pHH3.vsi - 40x_BF_01 (1, x=82570, y=77046, w=1153, h=797).png",
+            ImageDir.FULL)
+        with slideio.open_slide(file_path, "VSI") as slide:
+            self.assertEqual(slide.num_scenes,1)
+            self.assertEqual(slide.num_aux_images,2)
+            with slide.get_scene(0) as scene:
+                self.assertEqual(scene.num_channels,3)
+                self.assertEqual(scene.num_z_slices,1)
+                self.assertEqual(scene.num_t_frames,1)
+                self.assertEqual(scene.get_channel_data_type(0), np.uint8)
+                self.assertEqual(scene.get_channel_data_type(1), np.uint8)
+                self.assertEqual(scene.get_channel_data_type(2), np.uint8)
+                self.assertEqual(scene.magnification, 40)
+                self.assertEqual(scene.compression, slideio.Compression.Jpeg)
+                block = scene.read_block(rect=(82570,77046,1153,797), channel_indices=[0,1,2])
+                test_image = Image.open(test_file_path)
+                test_data = np.array(test_image)
+                self.assertTrue(np.array_equal(block, test_data))
         
 if __name__ == '__main__':
     unittest.main()

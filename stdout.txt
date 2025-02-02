@@ -1,0 +1,6 @@
+============================= test session starts ==============================
+platform linux -- Python 3.7.16, pytest-7.4.4, pluggy-1.2.0
+rootdir: /mnt/d/Projects/slideio/slideio-python-tests
+collected 14 items
+
+svs/test_svs_driver.py 
