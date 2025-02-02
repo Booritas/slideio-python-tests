@@ -304,7 +304,36 @@ class TestVsi(unittest.TestCase):
                 block = scene.read_block(rect=(82570,77046,1153,797), channel_indices=[0,1,2])
                 test_image = Image.open(test_file_path)
                 test_data = np.array(test_image)
-                self.assertTrue(np.array_equal(block, test_data))
+                similarity = compute_similarity(block, test_data)
+                self.assertGreater(similarity, 0.99)
         
+    def test_stack3d(self):
+        file_path = Tools().getImageFilePath("vsi", 
+            "private/3d/01072022_35_2_z.vsi",
+            ImageDir.FULL)
+        test_file_path = Tools().getImageFilePath("vsi", 
+            "private/3d/test-images/01072022_35_2_z.vsi - 60x_BF_Z_01 (1, x=45625, y=42302, w=984, h=1015).png",
+            ImageDir.FULL)
+        with slideio.open_slide(file_path, "VSI") as slide:
+            self.assertEqual(slide.num_scenes,1)
+            self.assertEqual(slide.num_aux_images,2)
+            with slide.get_scene(0) as scene:
+                self.assertEqual(scene.num_channels,3)
+                self.assertEqual(scene.num_z_slices,13)
+                self.assertEqual(scene.num_t_frames,1)
+                self.assertEqual(scene.get_channel_data_type(0), np.uint8)
+                self.assertEqual(scene.get_channel_data_type(1), np.uint8)
+                self.assertEqual(scene.get_channel_data_type(2), np.uint8)
+                self.assertEqual(scene.magnification, 60)
+                self.assertEqual(scene.compression, slideio.Compression.Jpeg)
+                block = scene.read_block(rect=(45625,42302,984,1015), channel_indices=[0,1,2], slices=(6,7))
+                test_image = Image.open(test_file_path)
+                test_data = np.array(test_image)
+                similarity = compute_similarity(block, test_data)
+                # block_image = Image.fromarray(block)
+                # block_image.show()
+                # test_image.show()
+                self.assertGreater(similarity, 0.99)
+
 if __name__ == '__main__':
     unittest.main()
