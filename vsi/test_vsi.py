@@ -179,7 +179,11 @@ class TestVsi(unittest.TestCase):
             aux_image_names = slide.get_aux_image_names()
             self.assertEqual(1, len(aux_image_names))
             self.assertEqual("Overview", aux_image_names[0])
-            with slide.get_scene(0) as scene:
+            indices = {}
+            for i in range(slide.num_scenes):
+                with slide.get_scene(i) as scene:
+                    indices[scene.name] = i
+            with slide.get_scene(indices["40x_01"]) as scene:
                 self.assertEqual(scene.rect, (0,0,14749,20874))
                 self.assertEqual(scene.origin, (0,0))
                 self.assertEqual(scene.size, (14749,20874))
@@ -212,7 +216,7 @@ class TestVsi(unittest.TestCase):
                 test_image = Image.open(Tools().getTestImagePath("vsi", test_file_name))
                 test_data = np.array(test_image)
                 self.assertTrue(np.array_equal(raster, test_data))
-            with slide.get_scene(1) as scene:
+            with slide.get_scene(indices["40x_02"]) as scene:
                 self.assertEqual(scene.rect, (0,0,15596,19403))
                 self.assertEqual(scene.origin, (0,0))
                 self.assertEqual(scene.size, (15596,19403))
