@@ -23,12 +23,15 @@ dists=$1
 os=$(uname -s)
 platform=$(uname -m)
 minversion=7
+maxversion=13
 
 if [[ "$os" == "Darwin" && "$platform" == "arm64" ]]; then
   # Set an environment variable if OS is macOS and platform is ARM
   minversion=8
 fi
 
+# minversion=10
+# maxversion=10
 
 # Define an array of Python version strings
 # Define a function to create an array of Python versions
@@ -67,7 +70,7 @@ deactivate_and_remove_conda_env() {
   echo "-----end of processing python version $version"
 }
 
-generate_python_versions minversion 12
+generate_python_versions minversion maxversion
 rm -rf ./dist
 eval "$(conda shell.bash hook)"
 
