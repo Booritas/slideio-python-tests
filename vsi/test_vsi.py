@@ -293,6 +293,7 @@ class TestVsi(unittest.TestCase):
             self.assertEqual(slide.num_scenes,1)
             self.assertEqual(slide.num_aux_images,2)
             with slide.get_scene(0) as scene:
+                self.assertEqual(scene.rect, (0,0,164267,150739))
                 self.assertEqual(scene.num_channels,3)
                 self.assertEqual(scene.num_z_slices,1)
                 self.assertEqual(scene.num_t_frames,1)
