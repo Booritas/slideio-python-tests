@@ -6,6 +6,8 @@ import cv2 as cv
 import slideio
 import numpy as np
 import os, sys
+import json
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from common.test_tools import Tools, ImageDir
 
@@ -217,6 +219,24 @@ class TestGDAL(unittest.TestCase):
                 mean, stddev = cv.meanStdDev(raster)
                 self.assertEqual(mean[0], 255)
                 self.assertAlmostEqual(stddev[0], 0, delta=1e-5)
+
+    def test_metadata_jpeg(self):
+        image_path =Tools().getImageFilePath("gdal","Airbus_Pleiades_50cm_8bit_RGB_Yogyakarta.jpg",ImageDir.PUBLIC)
+        with slideio.open_slide(image_path, "GDAL") as slide:
+            self.assertTrue(slide is not None)
+            metadata = slide.raw_metadata
+            self.assertTrue(isinstance(metadata, str))
+            self.assertTrue(metadata.startswith("{"))
+            dict_metadata = json.loads(metadata)
+            self.assertEqual(dict_metadata["EXIF_PixelXDimension"],"5494")
+
+    def test_metadata_tiff(self):
+        image_path =Tools().getImageFilePath("ometiff","SPIM-ModuloAlongZ.ome.tiff",ImageDir.FULL)
+        with slideio.open_slide(image_path, "GDAL") as slide:
+            self.assertTrue(slide is not None)
+            metadata = slide.raw_metadata
+            self.assertTrue(isinstance(metadata, str))
+            self.assertTrue(metadata.startswith("<?xml"))
 
 if __name__ == '__main__':
     unittest.main()
