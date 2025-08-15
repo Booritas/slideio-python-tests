@@ -15,7 +15,7 @@ def print_channel_info(channel_index, channel):
     print(f"\tMaximum: {np.max(channel)}")
     print(f"\tAverage: {np.mean(channel)}")
 
-class TestVsi(unittest.TestCase):
+class TestPKE(unittest.TestCase):
 
     def test_multichannel_slide(self):
         file_path = Tools().getImageFilePath("pke", "openmicroscopy/PKI_scans/LuCa-7color_Scan1.qptiff", ImageDir.FULL)
