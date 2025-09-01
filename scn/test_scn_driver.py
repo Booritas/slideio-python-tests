@@ -98,6 +98,30 @@ class TestSCN(unittest.TestCase):
                 break
         self.assertTrue(scene_found, "Scene with name 'StitchAB907A82-6319-422F-9B5B-EB0E0A9D0525' not found")
         
+    def test_3d_missing_channel(self):
+        image_path =Tools().getImageFilePath("scn", "private/HER2-63x_1.scn",ImageDir.FULL)
+        test_image_path =Tools().getImageFilePath("scn", "private/page-67-StitchAB907A82-6319-422F-9B5B-EB0E0A9D0525-z=4-r=0-c=2.tiff",ImageDir.FULL)
+        slide = slideio.open_slide(image_path, "SCN")
+        self.assertEqual(slide.num_scenes, 7)
+        self.assertEqual(slide.num_aux_images, 1)
+        image_names = slide.get_aux_image_names()
+        scene_found = False
+        for scene_index in range(slide.num_scenes):
+            scene = slide.get_scene(scene_index)
+            if scene.name == "StitchAB907A82-6319-422F-9B5B-EB0E0A9D0525":
+                rect = scene.rect
+                block_rect = (0, 0, rect[2], rect[3])
+                channels = [0,1,2]
+                scene_raster = scene.read_block(block_rect, channel_indices=channels, slices=(4, 5))
+                channel1 = scene.read_block(block_rect, channel_indices=[1], slices=(4, 5))
+                channel2 = scene.read_block(block_rect, channel_indices=[2], slices=(4, 5))
+                channel0 = np.zeros(channel1.shape, dtype=channel1.dtype)
+                combined = np.stack([channel0, channel1, channel2], axis=-1)
+                sim = compute_similarity(scene_raster, combined)
+                self.assertGreater(sim, 0.999)
+                scene_found = True
+                break
+        self.assertTrue(scene_found, "Scene with name 'StitchAB907A82-6319-422F-9B5B-EB0E0A9D0525' not found")
 
 if __name__ == '__main__':
     unittest.main()
