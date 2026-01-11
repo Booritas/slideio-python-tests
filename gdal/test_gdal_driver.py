@@ -75,8 +75,8 @@ class TestGDAL(unittest.TestCase):
             compression = scene.compression
             self.assertEqual(compression, slideio.Compression.Png)
         res = scene.resolution
-        self.assertEqual(0, res[0])
-        self.assertEqual(0, res[1])
+        self.assertAlmostEqual(0.0003527336, res[0], places=7)
+        self.assertAlmostEqual(0.0003527336, res[1], places=7)
 
     def test_3chnl_png16b_metadata(self):
         """Opens 3 channel 16 bit png file and checks metadata."""
@@ -101,8 +101,8 @@ class TestGDAL(unittest.TestCase):
             compression = scene.compression
             self.assertEqual(compression, slideio.Compression.Png)
         res = scene.resolution
-        self.assertEqual(0, res[0])
-        self.assertEqual(0, res[1])
+        self.assertAlmostEqual(0.0003527336, res[0], places=7)
+        self.assertAlmostEqual(0.0003527336, res[1], places=7)
 
     def test_3chnl_jpeg_metadata(self):
         """Opens 3 channel jpeg file and checks metadata."""
