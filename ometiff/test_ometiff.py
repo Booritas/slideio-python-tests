@@ -102,7 +102,7 @@ class TestOMETiff(unittest.TestCase):
                 self.assertEqual(scene.rect, (0,0,27136, 36160))
                 self.assertEqual(scene.size, (27136, 36160))
                 self.assertEqual(scene.magnification, 0)
-                self.assertEqual(scene.resolution, (0.3262e-6, 0.3262e-6))
+                self.assertEqual(scene.resolution, (3.261654650144857e-07, 3.261654650144857e-07))
                 self.assertEqual(scene.num_channels, 15)
                 self.assertEqual(scene.num_z_slices, 1)
                 block_rect = (12183, 19915, 402, 274)

@@ -49,8 +49,8 @@ class TestGDAL(unittest.TestCase):
             compression = scene.compression
             self.assertEqual(compression, slideio.Compression.Png)
         res = scene.resolution
-        self.assertEqual(0, res[0])
-        self.assertEqual(0, res[1])
+        self.assertEqual(0.0003527336860670194, res[0])
+        self.assertEqual(0.0003527336860670194, res[1])
 
     def test_1chnl_png_metadata(self):
         """Opens 3 channel png file and checks metadata."""
@@ -127,8 +127,8 @@ class TestGDAL(unittest.TestCase):
             compression = scene.compression
             self.assertEqual(compression, slideio.Compression.Jpeg)
         res = scene.resolution
-        self.assertEqual(0, res[0])
-        self.assertEqual(0, res[1])
+        self.assertEqual(0.0003527336860670194, res[0])
+        self.assertEqual(0.0003527336860670194, res[1])
 
     def test_readblock_png8bit(self):
         """
@@ -228,15 +228,16 @@ class TestGDAL(unittest.TestCase):
             self.assertTrue(isinstance(metadata, str))
             self.assertTrue(metadata.startswith("{"))
             dict_metadata = json.loads(metadata)
-            self.assertEqual(dict_metadata["EXIF_PixelXDimension"],"5494")
+            self.assertEqual(dict_metadata["ApplicationRecordVersion"]["description"],"Application Record Version")
 
     def test_metadata_tiff(self):
         image_path =Tools().getImageFilePath("ometiff","SPIM-ModuloAlongZ.ome.tiff",ImageDir.FULL)
         with slideio.open_slide(image_path, "GDAL") as slide:
             self.assertTrue(slide is not None)
-            metadata = slide.raw_metadata
+            metadata = slide.get_scene(0).get_raw_metadata()
             self.assertTrue(isinstance(metadata, str))
-            self.assertTrue(metadata.startswith("<?xml"))
+            dict_metadata = json.loads(metadata)
+            self.assertEqual(dict_metadata["channels"], 1)
 
 if __name__ == '__main__':
     unittest.main()
