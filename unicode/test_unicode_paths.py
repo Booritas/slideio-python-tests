@@ -64,20 +64,11 @@ class TestUnicodeDirectory:
         slide = unicode_slide(driver, subpath)
         assert slide.get_scene(0).file_path == unicode_image(subpath)
 
-    @pytest.mark.parametrize("driver", sorted(set(CASES) - {"ZVI"}))
+    @pytest.mark.parametrize("driver", sorted(CASES))
     def test_slide_reports_the_path_it_was_given(self, driver, unicode_slide):
+        """ZVI is included: it returned an empty path until 2.10.0 was fixed."""
         subpath, _, _ = CASES[driver]
         slide = unicode_slide(driver, subpath)
-        assert slide.file_path == unicode_image(subpath)
-
-    @pytest.mark.xfail(
-        strict=True,
-        reason="ZVI driver leaves Slide.file_path empty for every file, "
-               "unicode or not, while Scene.file_path is correct",
-    )
-    def test_zvi_slide_reports_the_path_it_was_given(self, unicode_slide):
-        subpath, _, _ = CASES["ZVI"]
-        slide = unicode_slide("ZVI", subpath)
         assert slide.file_path == unicode_image(subpath)
 
 
