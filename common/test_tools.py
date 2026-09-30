@@ -12,22 +12,20 @@ class ImageDir(Enum):
 
 class Tools:
     def getImageDirPath(self, subpath, testImageDir):
-        if testImageDir == ImageDir.PUBLIC:
-            return os.environ.get('SLIDEIO_TEST_DATA_PATH')
-        elif testImageDir == ImageDir.PRIVATE:
-            return os.environ.get('SLIDEIO_TEST_DATA_PRIV_PATH')
-        elif testImageDir == ImageDir.FULL:
-            return os.environ.get('SLIDEIO_IMAGES_PATH')
-        raise Exception("Invalid test image directory")
+        return os.environ.get('SLIDEIO_IMAGES_PATH')
     
     def getImageFilePath(self, format, subpath, testImageDir):
         return os.path.join(self.getImageDirPath(subpath, testImageDir), format, subpath)
     
     def isImageTestAvalable(self, testImageDir):
-        try:
-            return os.path.exists(self.getImageDirPath(testImageDir))
-        except:
-            return False
+        """True when the shared image corpus is reachable.
+
+        The previous version called getImageDirPath with one argument against
+        a two-argument signature, so the bare except turned every call into
+        False.  Nothing called it, which is why that stayed invisible.
+        """
+        path = self.getImageDirPath(None, testImageDir)
+        return bool(path) and os.path.exists(path)
         
     def getTestImagePath(self, format, filename):
         return os.path.join(root_path, "images", format, filename)  
@@ -66,3 +64,54 @@ def compare_images(left, right):
         return 1.0
     return 0.
         
+
+# ---------------------------------------------------------------------------
+# Corpus access helpers
+# ---------------------------------------------------------------------------
+# The shared image corpus is located through SLIDEIO_IMAGES_PATH.  Tests that
+# need an image that is not part of every checkout go through image_path() so a
+# missing file produces one clear message instead of an opaque RuntimeError from
+# the C++ layer.
+
+_FALSE_VALUES = {"0", "false", "no", "off"}
+
+
+def images_root():
+    """Root of the shared image corpus, or None when it is not configured."""
+    return os.environ.get('SLIDEIO_IMAGES_PATH')
+
+
+def skip_missing_images_enabled():
+    """Whether a missing image should skip instead of fail.
+
+    Mirrors the convention of the binding repository: only 0, false, no and off
+    count as "not set", so an accidental SLIDEIO_SKIP_MISSING_IMAGES=maybe still
+    enables skipping rather than silently doing nothing.  CI must leave the
+    variable unset so coverage cannot disappear quietly.
+    """
+    value = os.environ.get('SLIDEIO_SKIP_MISSING_IMAGES')
+    if value is None:
+        return False
+    return value.strip().lower() not in _FALSE_VALUES
+
+
+def image_path(image_format, subpath):
+    """Absolute path of a corpus image, checked for existence.
+
+    Raises unless SLIDEIO_SKIP_MISSING_IMAGES says otherwise, in which case the
+    calling test is skipped.
+    """
+    root = images_root()
+    if not root:
+        _missing("SLIDEIO_IMAGES_PATH is not set")
+    path = os.path.join(root, image_format, subpath)
+    if not os.path.exists(path):
+        _missing(f"image not found: {path}")
+    return path
+
+
+def _missing(message):
+    if skip_missing_images_enabled():
+        import pytest
+        pytest.skip(message)
+    raise FileNotFoundError(message)
