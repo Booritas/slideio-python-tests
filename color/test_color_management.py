@@ -81,13 +81,18 @@ class TestParameterDefaults:
         management.black_point_compensation = enabled
         assert management.black_point_compensation is enabled
 
-    @pytest.mark.xfail(
-        raises=TypeError, strict=True,
-        reason="slideio 2.10.0: TransformationType is not registered with "
-               "pybind11, so reading .type raises instead of returning the enum",
-    )
     def test_transformation_type_is_readable(self):
-        assert slideio.ColorManagement().type is not None
+        """Reading .type raised until TransformationType was registered."""
+        assert slideio.ColorManagement().type == slideio.TransformationType.ColorManagement
+
+    def test_every_transformation_reports_its_own_type(self):
+        """Each wrapper must name itself, not inherit a neighbour's type."""
+        for name in ("ColorTransformation", "ColorManagement",
+                     "GaussianBlurFilter", "MedianBlurFilter", "SobelFilter",
+                     "ScharrFilter", "LaplacianFilter", "BilateralFilter",
+                     "CannyFilter"):
+            transformation = getattr(slideio, name)()
+            assert transformation.type == getattr(slideio.TransformationType, name)
 
 
 class TestProfiledScene:

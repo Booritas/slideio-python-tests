@@ -9,6 +9,8 @@ it.  These tests pin what 2.10 exports.
 import pytest
 import slideio
 
+from common.test_tools import image_path
+
 # Everything a caller is expected to reach through `slideio.<name>`.
 PUBLIC_NAMES = [
     # module functions
@@ -26,7 +28,7 @@ PUBLIC_NAMES = [
     # enums
     "Compression", "DataType", "ColorSpace", "ColorProfileInfo",
     "ColorProfileSource", "ColorTarget", "IccColorSpace", "RenderingIntent",
-    "MissingProfilePolicy",
+    "MissingProfilePolicy", "MetadataFormat", "TransformationType",
 ]
 
 
@@ -45,21 +47,34 @@ class TestPublicExports:
         assert set(slideio.get_driver_ids()) == expected
 
 
-class TestUnexportedTypes:
-    """Types returned by public properties that the package does not export."""
+class TestEnumsReturnedByProperties:
+    """A type a public property returns must be reachable from the package.
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason="slideio 2.10.0: Slide.metadata_format and Scene.metadata_format "
-               "return a MetadataFormat, but the enum is only reachable as "
-               "slideio.core.libs.slideiopybind.MetadataFormat, so there is no "
-               "public constant to compare a returned value against",
-    )
+    Both of these were registered in the binding but unreachable from slideio
+    itself, so a caller could not compare a returned value to a constant
+    without importing the private extension module.
+    """
+
     def test_metadata_format_enum_is_exported(self):
         assert hasattr(slideio, "MetadataFormat")
 
-    def test_metadata_format_values_are_still_usable_by_name(self):
-        """Until the enum is exported, comparing by name is the way out."""
-        from slideio.core.libs.slideiopybind import MetadataFormat
-        assert set(MetadataFormat.__members__) == {
+    def test_metadata_format_members(self):
+        assert set(slideio.MetadataFormat.__members__) == {
             "None", "Unknown", "XML", "JSON", "TEXT"}
+
+    def test_metadata_format_compares_against_the_public_constant(self):
+        path = image_path("philips", "Philips-1.tiff")
+        slide = slideio.open_slide(path, "PHTIFF")
+        try:
+            assert slide.metadata_format == slideio.MetadataFormat.XML
+        finally:
+            slide.close()
+
+    def test_transformation_type_enum_is_exported(self):
+        assert hasattr(slideio, "TransformationType")
+
+    def test_transformation_type_members(self):
+        assert set(slideio.TransformationType.__members__) == {
+            "Unknown", "ColorTransformation", "ColorManagement",
+            "GaussianBlurFilter", "MedianBlurFilter", "SobelFilter",
+            "ScharrFilter", "LaplacianFilter", "BilateralFilter", "CannyFilter"}
