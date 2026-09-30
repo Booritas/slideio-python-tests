@@ -31,9 +31,11 @@ if (!(Test-Path -Path $Dists -PathType Container)) {
     exit 1
 }
 
-# Default min/max version
-$minVersion = 7
-$maxVersion = 13
+# Default min/max version.  Must cover the Python versions the wheels are built
+# for; a version with no matching wheel is reported at the end rather than
+# passing silently.
+$minVersion = 9
+$maxVersion = 14
 
 
 # --- Helper Functions ----------------------------------------------
@@ -86,6 +88,10 @@ if (Test-Path "./dist") {
 
 Write-Host "`n--- Processing wheel files in '$Dists' ---`n"
 
+# Outcome per Python version, so a failure in one version cannot be hidden by a
+# later success.  The script's exit code is derived from this at the end.
+$results = [ordered]@{}
+
 foreach ($version in $pythonVersions) {
     Write-Host "`n----- Processing Python version: $version -----"
 
@@ -99,6 +105,7 @@ foreach ($version in $pythonVersions) {
 
     if (-not $wheelFile) {
         Write-Host "Error: No .whl file found for Python $version in directory '$Dists'"
+        $results[$version] = "NO WHEEL"
         Deactivate-And-RemoveCondaEnv -Version $version
         continue
     }
@@ -113,9 +120,35 @@ foreach ($version in $pythonVersions) {
 
     Write-Host "=== Running tests via pytest ==="
     pytest .
+    $pytestExit = $LASTEXITCODE
+    if ($pytestExit -eq 0) {
+        $results[$version] = "PASSED"
+    } else {
+        $results[$version] = "FAILED (pytest exit $pytestExit)"
+    }
 
     # 5. Deactivate & remove environment
     Deactivate-And-RemoveCondaEnv -Version $version
 }
 
+# --- Summary -------------------------------------------------------------
+
+Write-Host "`n--- Summary ---"
+foreach ($entry in $results.GetEnumerator()) {
+    Write-Host ("  Python {0,-5} {1}" -f $entry.Key, $entry.Value)
+}
+
+$failed = @($results.GetEnumerator() | Where-Object { $_.Value -like "FAILED*" })
+$missing = @($results.GetEnumerator() | Where-Object { $_.Value -eq "NO WHEEL" })
+
+if ($missing.Count -gt 0) {
+    Write-Host "`nWarning: no wheel for $($missing.Count) version(s): $($missing.Key -join ', ')"
+}
+
+if ($failed.Count -gt 0) {
+    Write-Host "`nTests failed for $($failed.Count) version(s): $($failed.Key -join ', ')`n"
+    exit 1
+}
+
 Write-Host "`nAll done!`n"
+exit 0
