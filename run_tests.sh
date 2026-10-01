@@ -23,7 +23,7 @@ dists=$1
 os=$(uname -s)
 platform=$(uname -m)
 minversion=7
-maxversion=13
+maxversion=14
 
 if [[ "$os" == "Darwin" && "$platform" == "arm64" ]]; then
   # Set an environment variable if OS is macOS and platform is ARM

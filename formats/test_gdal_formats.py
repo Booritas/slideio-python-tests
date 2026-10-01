@@ -5,6 +5,8 @@ did not crash, so each case is checked against an uncompressed sibling of the
 same picture that already ships in the corpus: the decoded pixels must agree.
 That catches a broken or missing codec, which a smoke test would not.
 """
+import sys
+
 import numpy as np
 import pytest
 import slideio
@@ -27,6 +29,21 @@ SINGLES = {
     "jpegxr_tissue": (("jxr", "tissue.jxr"), (550, 345)),
 }
 
+# The FreeImage build shipped in the macOS wheels has no JPEG XR plugin: it
+# loads these files as FIT_UNKNOWN and slideio raises "Unsupported FreeImage
+# type".
+UNSUPPORTED_ON_MACOS = {"jpegxr_wdp", "jpegxr_sample", "jpegxr_tissue"}
+
+
+def platform_params(keys):
+    """Wrap keys as pytest params, skipping those macOS cannot decode."""
+    return [
+        pytest.param(key, marks=pytest.mark.skipif(
+            sys.platform == "darwin" and key in UNSUPPORTED_ON_MACOS,
+            reason="FreeImage on macOS lacks JPEG XR support"))
+        for key in keys
+    ]
+
 
 @pytest.fixture
 def gdal_scene(opened_slide):
@@ -37,7 +54,7 @@ def gdal_scene(opened_slide):
 
 class TestCompressedAgainstUncompressed:
 
-    @pytest.mark.parametrize("key", sorted(PAIRS))
+    @pytest.mark.parametrize("key", platform_params(sorted(PAIRS)))
     def test_geometry_matches_the_sibling(self, key, gdal_scene):
         compressed, uncompressed, size, _ = PAIRS[key]
         left, right = gdal_scene(*compressed), gdal_scene(*uncompressed)
@@ -46,7 +63,7 @@ class TestCompressedAgainstUncompressed:
         assert left.num_channels == right.num_channels == 3
         assert left.get_channel_data_type(0) == np.uint8
 
-    @pytest.mark.parametrize("key", sorted(PAIRS))
+    @pytest.mark.parametrize("key", platform_params(sorted(PAIRS)))
     def test_decoded_pixels_match_the_sibling(self, key, gdal_scene):
         compressed, uncompressed, _, floor = PAIRS[key]
         left = gdal_scene(*compressed).read_block()
@@ -54,7 +71,8 @@ class TestCompressedAgainstUncompressed:
         assert left.shape == right.shape
         assert compute_similarity(left, right) >= floor
 
-    @pytest.mark.parametrize("key", [k for k, v in PAIRS.items() if v[3] == 1.0])
+    @pytest.mark.parametrize(
+        "key", platform_params(k for k, v in PAIRS.items() if v[3] == 1.0))
     def test_lossless_codecs_reproduce_the_sibling_exactly(self, key, gdal_scene):
         compressed, uncompressed, _, _ = PAIRS[key]
         left = gdal_scene(*compressed).read_block()
@@ -64,14 +82,14 @@ class TestCompressedAgainstUncompressed:
 
 class TestSingleFiles:
 
-    @pytest.mark.parametrize("key", sorted(SINGLES))
+    @pytest.mark.parametrize("key", platform_params(sorted(SINGLES)))
     def test_geometry(self, key, gdal_scene):
         location, size = SINGLES[key]
         scene = gdal_scene(*location)
         assert scene.size == size
         assert scene.num_channels == 3
 
-    @pytest.mark.parametrize("key", sorted(SINGLES))
+    @pytest.mark.parametrize("key", platform_params(sorted(SINGLES)))
     def test_full_read(self, key, gdal_scene):
         location, size = SINGLES[key]
         raster = gdal_scene(*location).read_block()

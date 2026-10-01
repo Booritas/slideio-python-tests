@@ -1,6 +1,0 @@
-{
-  "terminal.integrated.shellIntegration.enabled": true,
-  "terminal.integrated.env.windows": {
-    "Path": "C:\\Users\\Stanislav\\anaconda3;C:\\Users\\Stanislav\\anaconda3\\Scripts;C:\\Users\\Stanislav\\anaconda3\\Library\\bin;${env:Path}"
-  }
-}

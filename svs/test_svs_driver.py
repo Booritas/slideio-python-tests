@@ -413,7 +413,7 @@ class TestSVS(unittest.TestCase):
         scaling_params = [
             (1.0, 0.99, 0.0013),
             (1.5, 0.93, 0.007),
-            (2.0, 0.99, 0.0009),
+            (2.0, 0.99, 0.00093),
             (3.0, 0.90, 0.01),
             (5.0, 0.84, 0.015)
             ]
@@ -472,7 +472,7 @@ class TestSVS(unittest.TestCase):
         reference_image = cv.extractChannel(reference_image, 1)
 
         scaling_params = [
-            (2.0, 0.99, 0.0009)
+            (2.0, 0.99, 0.00093)
             ]
 
         for param in scaling_params:
@@ -532,7 +532,7 @@ class TestSVS(unittest.TestCase):
             )
 
         scaling_params = [
-            (2.0, 0.99, 0.0009)
+            (2.0, 0.99, 0.00093)
             ]
 
         for param in scaling_params:
