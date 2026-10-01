@@ -32,14 +32,14 @@ SINGLES = {
 # The FreeImage build shipped in the macOS wheels has no JPEG XR plugin: it
 # loads these files as FIT_UNKNOWN and slideio raises "Unsupported FreeImage
 # type".
-UNSUPPORTED_ON_MACOS = {"jpegxr_wdp", "jpegxr_sample", "jpegxr_tissue"}
+UNSUPPORTED_ON_MACOS_LINUX = {"jpegxr_wdp", "jpegxr_sample", "jpegxr_tissue"}
 
 
 def platform_params(keys):
     """Wrap keys as pytest params, skipping those macOS cannot decode."""
     return [
         pytest.param(key, marks=pytest.mark.skipif(
-            sys.platform == "darwin" and key in UNSUPPORTED_ON_MACOS,
+            (sys.platform == "darwin" or sys.platform == "linux") and key in UNSUPPORTED_ON_MACOS_LINUX,
             reason="FreeImage on macOS lacks JPEG XR support"))
         for key in keys
     ]
